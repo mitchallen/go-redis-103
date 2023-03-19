@@ -39,7 +39,7 @@ go mod init github.com/mitchallen/go-redis-103
 Get the redis package
 
 ```sh
-go get github.com/go-redis/redis/v8
+go get github.com/go-redis/redis/v9
 ```
 
 How the main file was created (see actual source code):

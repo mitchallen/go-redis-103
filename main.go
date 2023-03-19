@@ -9,8 +9,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
-type User struct {
-	Location string `json:"location"`
+type Lock struct {
+	Resource string `json:"resource"`
 	UserID   string `json:"userId"`
 	Duration string `json:"duration"`
 }
@@ -34,11 +34,11 @@ func main() {
 
 	NAMESPACE := "lock"
 
-	LOCATION := "Alpha"
+	RESOURCE := "Alpha"
 	LOCK_SECONDS := time.Second * 5
 
-	json, err := json.Marshal(User{
-		Location: LOCATION,
+	json, err := json.Marshal(Lock{
+		Resource: RESOURCE,
 		UserID:   "admin",
 		Duration: LOCK_SECONDS.String(),
 	})
@@ -46,7 +46,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	TEST_KEY := makeKey(NAMESPACE, LOCATION)
+	TEST_KEY := makeKey(NAMESPACE, RESOURCE)
 
 	fmt.Printf("TEST_KEY: %s \n", TEST_KEY)
 
@@ -55,14 +55,31 @@ func main() {
 		fmt.Println(err)
 	}
 
+	// loop until the key expires
 	for range time.Tick(time.Second * 1) {
+		// Test for existance of the key
+		exists, err := client.Exists(TEST_KEY).Result()
+		fmt.Printf("\nEXISTS? key %s exists? %v ... err: %v \n", TEST_KEY, exists, err)
+		if err != nil {
+			// An unexpected error occured
+			fmt.Printf("ERROR [Exists]: %v \n", err)
+		}
+		// Get the key
 		val, err := client.Get(TEST_KEY).Result()
-		if len(val) == 0 {
+		if len(val) == 0 { // or val == ""
+			// if an empty sting was retuned, the key was not found
 			fmt.Println("--- key not found ---")
 		}
 		if err != nil {
-			fmt.Printf("ERROR: %v \n", err)
-			panic(err)
+			if err == redis.Nil {
+				// If the error was redis.Nil, the key was not found
+				fmt.Printf("--- GET returned redis.Nil, err: %v ---\n", err)
+			} else {
+				// Otherwise an unexpected error occurred
+				fmt.Printf("ERROR [Get]: %v \n", err)
+			}
+
+			break
 		}
 
 		fmt.Println(val)
