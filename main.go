@@ -15,6 +15,14 @@ type User struct {
 	Duration string `json:"duration"`
 }
 
+func makeKey(namespace string, location string) string {
+	return fmt.Sprintf(
+		"%s:%s",
+		strings.ToLower(namespace),
+		strings.ToLower(location),
+	)
+}
+
 func main() {
 	fmt.Println("Testing Golang Redis")
 
@@ -38,7 +46,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	TEST_KEY := fmt.Sprintf("%s:%s for %v", NAMESPACE, strings.ToLower(LOCATION), LOCK_SECONDS)
+	TEST_KEY := makeKey(NAMESPACE, LOCATION)
 
 	fmt.Printf("TEST_KEY: %s \n", TEST_KEY)
 
