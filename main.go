@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -24,11 +25,12 @@ func main() {
 	})
 
 	NAMESPACE := "lock"
-	LOCK_ID := "L123"
+
+	LOCATION := "Alpha"
 	LOCK_SECONDS := time.Second * 5
 
 	json, err := json.Marshal(User{
-		Location: "Alpha",
+		Location: LOCATION,
 		UserID:   "admin",
 		Duration: LOCK_SECONDS.String(),
 	})
@@ -36,7 +38,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	TEST_KEY := fmt.Sprintf("%s:%s for %v", NAMESPACE, LOCK_ID, LOCK_SECONDS)
+	TEST_KEY := fmt.Sprintf("%s:%s for %v", NAMESPACE, strings.ToLower(LOCATION), LOCK_SECONDS)
 
 	fmt.Printf("TEST_KEY: %s \n", TEST_KEY)
 
